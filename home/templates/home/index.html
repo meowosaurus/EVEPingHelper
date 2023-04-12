@@ -1,0 +1,187 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shadow Ultimatum Ping Helper</title>
+    <link href="{% static 'home/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+      body {
+        background-color: #1e272e;
+      }
+    </style>
+  <body>
+
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container">
+      <a class="navbar-brand" href="#">
+        
+        <img src="{% static 'home/logo.png' %}" alt="">
+        Shadow Ultimatum Ping Helper
+        
+      </a>
+      </div>
+    </nav>
+    <br />
+
+    <div class="container">
+        
+        <form>
+            <div class="mb-3 text-white">
+                <label for="exampleFormControlInput1" class="form-label">FC Name:</label>
+                <input type="email" class="form-control" id="fc-name-field" placeholder="">
+              </div>
+              <div class="mb-3 text-white">
+                <label for="exampleFormControlInput1" class="form-label">Formup Location:</label>
+                <input type="email" class="form-control" id="formup-field" placeholder="">
+              </div>
+              <div class="mb-3 text-white">
+                <label for="exampleFormControlTextarea1" class="form-label">Additional Information:</label>
+                <textarea class="form-control" id="hurf-field" rows="3"></textarea>
+              </div>
+              <select class="form-select" id="doctrine-menu">
+                <option selected value="None">Select Doctrine</option>
+                <option value="eagle">Eagle Doctrine</option>
+                <option value="muninn">Muninn Doctrine</option>
+                <option value="bomb-bomber">Bomb-Bomber Doctrine</option>
+                <option value="caracal">Caracal Doctrine</option>
+                <option value="cormorant">Cormorant Doctrine</option>
+                <option value="ferox">Ferox Doctrine</option>
+                <option value="flycatcher">Flycatcher Doctrine</option>
+                <option value="kikimora">Kikimora Doctrine</option>
+                <option value="torp-bomber">Torp-Bomber Doctrine</option>
+                <option value="adm">ADM</option>
+              </select>
+              <br>
+              <select class="form-select" id="comms-menu">
+                <option selected value="None">Select Comms</option>
+                <option value="s1">Strategic 1</option>
+                <option value="s2">Strategic 2</option>
+                <option value="p1">Peacetime 1</option>
+                <option value="p2">Peacetime 2</option>
+                <option value="st">Standing Fleet Main</option>
+              </select>
+              <br>
+              <select class="form-select" id="reimbursement-menu">
+                <option selected value="None">Select Reimbursement</option>
+                <option value="strategic">Strategic</option>
+                <option value="none">None</option>
+              </select>
+              <br>
+              <div class="form-check text-white">
+                <input class="form-check-input" type="checkbox" id="requestingPingCheck">
+                <label class="form-check-label" for="requestingPingCheck">
+                    Are you requesting a ping?
+                </label>
+              </div>    
+          </form>
+          <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label text-white">Output:</label>
+            <textarea class="form-control" id="output-field" rows="10" placeholder=""></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label text-white">Copy this into your fleet MOTD:</label>
+            <textarea class="form-control" id="motd-field" rows="10"></textarea>
+          </div>
+    </div>
+    
+
+    <script>
+      const fcNameField = document.getElementById('fc-name-field');
+      const formupField = document.getElementById('formup-field');
+      const commsMenu = document.getElementById('comms-menu');
+      const doctrineMenu = document.getElementById('doctrine-menu');
+      const reimbursementMenu = document.getElementById('reimbursement-menu');
+      const hurfField = document.getElementById('hurf-field');
+      const requestingCheck = document.getElementById('requestingPingCheck');
+
+      const outputField = document.getElementById('output-field');
+      const motdField = document.getElementById('motd-field');
+
+      const inputElements = [fcNameField, formupField, commsMenu, doctrineMenu, reimbursementMenu, hurfField, requestingCheck];
+
+      inputElements.forEach(element => element.addEventListener('input', updateOutput));
+      
+      const commsOptions = {
+        s1: { name: "Strategic 1", arrow: '->', link: "http://localhost:8000/s1", logiChannel: "<a href=\"joinChannel:player_8d67fcf0a0c411ed98e03a68dd86f9e7//None//None\">SHADO Logi S1</a>" },
+        s2: { name: "Strategic 2", arrow: '->', link: "http://localhost:8000/s2", logiChannel: "<a href=\"joinChannel:player_a6aa3f0fa0c511edaf003a68dd86f9e7//None//None\">SHADO Logi S2</a>" },
+        p1: { name: "Peacetime 1", arrow: '->', link: "http://localhost:8000/p1", logiChannel: "<a href=\"joinChannel:player_cc79021ea0e911ed8c8600109bd0f828//None//None\">SHADO Logi P1</a>" },
+        p2: { name: "Peacetime 2", arrow: '->', link: "http://localhost:8000/p2", logiChannel: "<a href=\"joinChannel:player_5e65ba70a0ea11edbffb00109bd0f828//None//None\">SHADO Logi P2</a>" },
+        st: { name: "Standing Fleet Main", arrow: '->', link: "http://localhost:8000/st", logiChannel: "" },
+      };
+
+      const doctrineOptions = {
+        eagle: { 
+          name: 'Eagle Doctrine',
+          comp: "Eagle Doctrine (Claymore > Vulture > Basilisk > Eagle > Huginn > Lachesis > Scythe > Tackle > Else)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/13/" },
+        muninn: { 
+          name: 'Eagle Doctrine',
+          comp: "Muninn Doctrine (Claymore > Scimitar > Muninn > Cerberus > Lachesis/Huginn > Scythe > Bellicose > Tackle > Else", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/11/" },
+        bombbomber: { 
+          name: 'Bomb-Bomber Doctrine',
+          comp: "Bomb-Bomber Doctrine", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/14/" },
+        caracal: { 
+          name: 'Caracal Doctrine',
+          comp: "Caracal Doctrine (Cyclone > Scythe > Caracal > Tackle > Else)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/6/" },
+        cormorant: { 
+          name: 'Cormorant Doctrine',
+          comp: "Cormorant Doctrine (Cormorant > Burst > Bantam > Vigil > Tackle > Else)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/8/" },
+        ferox: { 
+          name: 'Ferox Doctrine',
+          comp: "Ferox Doctrine (Cyclone > Basilsik > Scythe > Ferox > Bellicose > Tackle > Else)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/4/" },
+        flycatcher: { 
+          name: 'Flycatcher Doctrine',
+          comp: "Flycatcher Doctrine (Boosters > Kirin/Scalpel > Flycatcher > Keres/Hyena > Vigil > Tackle > Else)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/22/" },
+        kikimora: { 
+          name: 'Kikimora Doctrine',
+          comp: "Kikimora Fleet (Boosters > Kirin/Scalpel > Kikimora > Hound/Purifier > Keres/Hyena)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/17/" },
+        torpbomber: { 
+          name: 'Torp-Bomber Doctrine',
+          comp: "Torp-Bomber Doctrine", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/15/" },
+        adm: { 
+          name: 'ADM Doctrine',
+          comp: "ADM Doctrine (Vexor > Myrmidon > Ishtar)", 
+          link: "https://auth.shadow-ultimatum.space/fittings/doctrine/18/" },
+      };
+
+      const reimbursementOptions = {
+        strategic: { name: "Strategic", ping: { target: "<@&996168218525831408> <@&1071601901906436186>", targetEnd: "\n```" }, defaultPing: { target: "@everyone", targetEnd: "" } },
+        none: { name: "None", ping: { target: "<@&996168218525831408> <@&1071601901906436186>", targetEnd: "\n```" }, defaultPing: { target: "@here", targetEnd: "" } },
+      };
+
+      function updateOutput() {
+        const fcNameInputText = fcNameField.value;
+        const formupInputText = formupField.value;
+        const boostChannel = "<a href=\"joinChannel:player_16b813dea0e911ed8d273a68dd86f9e7//None//None\">SHADO Boosting</a>"
+
+        const selectedCommsOption = commsMenu.value;
+        const commsOptionData = commsOptions[selectedCommsOption] || { name: "None", arrow: '', link: "", logiChannel: "" };
+
+        const selectedDoctrineOption = doctrineMenu.value;
+        const doctrineOptionData = doctrineOptions[selectedDoctrineOption] || { name: "None", comp: "", link: "" };
+
+        const selectedReimbursementOption = reimbursementMenu.value;
+        const reimbursementOptionData = reimbursementOptions[selectedReimbursementOption] || { name: "None", ping: { target: "", targetEnd: "" }, defaultPing: { target: "", targetEnd: "" } };
+        const reimbursementOption = reimbursementOptionData.name;
+        const pingTarget = requestingCheck.checked ? reimbursementOptionData.ping.target : reimbursementOptionData.defaultPing.target;
+        const pingTargetEnd = requestingCheck.checked ? reimbursementOptionData.ping.targetEnd : reimbursementOptionData.defaultPing.targetEnd;
+
+        const hurfTextField = hurfField.value;
+        outputField.value = `${pingTarget}Aditional Information:\n${hurfTextField}\n\nFC Name: ${fcNameInputText}\nFormup Location: ${formupInputText}\nComms: ${commsOptionData.name} ${commsOptionData.arrow} ${commsOptionData.link}\nDoctrine: ${doctrineOptionData.comp}\nReimbursement: ${reimbursementOption}${pingTargetEnd}`;
+        motdField.value = `<font size="13" color="#ffffffff">\nDoctrine: <a href="${doctrineOptionData.link}">${doctrineOptionData.name}</a>\nComposition: ${doctrineOptionData.comp}\n\nFormup: ${formupInputText}\nComms: <a href="${commsOptionData.link}">${commsOptionData.name}</a>\n\nLogi-Channel: ${commsOptionData.logiChannel}\nBoosts: ${boostChannel}\n\nAnchor:</font>`
+      }
+    </script>
+    <script src="{% static 'home/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>
